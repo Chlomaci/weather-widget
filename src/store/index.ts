@@ -1,9 +1,46 @@
 import { createStore } from "vuex";
+import IData from "@/types/types";
 
 export default createStore({
-  state: {},
+  state: {
+    // API data
+    api_key: "4f10d8ada7d0a9704cb516365e3b18e1",
+    city_name: "",
+    localStorageCity: '',
+    localStorageCountry: '',
+    citiesArr: [''],
+    country: '',
+    icon: '',
+    temp: 0,
+    feels_like: 0,
+    wind: 0,
+    pressure: 0,
+    description: '',
+    humidity: 0,
+    dew: 0,
+    visibility: 0,
+
+    // Show data
+    isLocalStorage: false,
+  },
   getters: {},
-  mutations: {},
-  actions: {},
+  mutations: {
+    setData(state, json:IData) {
+      state.city_name = json.name;
+      state.temp = Math.round(json.main.temp);
+      state.feels_like = Math.round(json.main.feels_like);
+      state.wind = json.wind.speed;
+      state.pressure = json.main.pressure;
+      state.icon = `https://openweathermap.org/img/wn/${json.weather[0].icon}@2x.png`;
+      state.description = json.weather[0].description;
+      state.humidity = json.main.humidity;
+      state.visibility = json.visibility;
+      state.country = json.sys.country;
+      state.localStorageCountry = json.sys.country;
+      state.localStorageCity = json.name;
+    }
+  },
+  actions: {
+  },
   modules: {},
 });
