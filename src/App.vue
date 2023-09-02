@@ -44,7 +44,7 @@
             <img :src="delete_svg" alt="delete" class="query__img" />
           </div>
           <div class="form__input">
-            <input type="text" v-model="city_name" @keypress.prevent.enter="changeSettings" placeholder="Type in the name of the place" />
+            <input type="text" v-model="inputValue" @keypress.prevent.enter="changeSettings" placeholder="Type in the name of the place" />
             <button type="submit" class="form__submit" @click="changeSettings" >
               <img :src="enter_svg" alt="enter" class="settings_img" />
             </button>
@@ -60,9 +60,11 @@
 import { defineComponent } from "vue";
 import store from "@/store";
 import IData from "@/types/types";
+import {mapState, mapMutations} from "vuex";
 
 export default defineComponent({
   name: "WeatherWidget",
+  store: store,
   data() {
     return {
       // svg icons
@@ -74,29 +76,19 @@ export default defineComponent({
       burger_svg: require("./assets/burger.svg"),
       delete_svg: require("./assets/delete.svg"),
 
-      // API data
-      api_key: "4f10d8ada7d0a9704cb516365e3b18e1",
-      city_name: "",
-      localStorageCity: '',
-      localStorageCountry: '',
-      citiesArr: [''],
-      country: '',
-      icon: '',
-      temp: 0,
-      feels_like: 0,
-      wind: 0,
-      pressure: 0,
-      description: '',
-      humidity: 0,
-      dew: 0,
-      visibility: 0,
+      inputValue: '',
 
       // Show data
       isSettingsShowed: false,
-      isLocalStorage: false,
     };
   },
   methods: {
+    ...mapMutations({
+      setData: 'setData',
+      setLocalStorage: "setLocalStorage",
+      setCachedCities: "setCachedCities",
+    }),
+
     changeSettings() {
       if (!this.isSettingsShowed) {
         this.isSettingsShowed = true;
@@ -105,37 +97,14 @@ export default defineComponent({
       }
     },
 
-    changeData(json: IData) {
-      this.city_name = json.name;
-      this.temp = Math.round(json.main.temp);
-      this.feels_like = Math.round(json.main.feels_like);
-      this.wind = json.wind.speed;
-      this.pressure = json.main.pressure;
-      this.icon = `https://openweathermap.org/img/wn/${json.weather[0].icon}@2x.png`;
-      this.description = json.weather[0].description;
-      this.humidity = json.main.humidity;
-      this.visibility = json.visibility;
-      this.country = json.sys.country;
-      this.localStorageCountry = json.sys.country;
-      this.localStorageCity = json.name;
-
-      this.cacheData(json);
-    },
-
-    cacheData(json: IData) {
-      if (this.citiesArr.length < 6) {
-        this.citiesArr.unshift(this.city_name)
-      } else {
-        this.citiesArr.pop()
-        this.citiesArr.unshift(this.city_name)
-      }
-    },
-
     async getActualLocationData(lat: number, lon: number) {
       try {
         await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${this.api_key}&units=metric`
         ).then(response => response.json()
-        ).then(json => this.changeData(json))
+        ).then(json => {
+          this.setData(json);
+          this.setCachedCities(json.name);
+        })
       } catch (e) {
         console.log(e)
       }
@@ -145,7 +114,11 @@ export default defineComponent({
       try {
         await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${this.api_key}&units=metric`
         ).then(response => response.json()
-        ).then(json => this.changeData(json))
+        ).then(json => {
+          this.setData(json);
+          this.setLocalStorage(json.name, json.sys.country);
+          this.setCachedCities(json.name);
+        })
       } catch (e) {
         console.log(e)
       }
@@ -154,8 +127,7 @@ export default defineComponent({
 
   mounted() {
     if (localStorage.city_name) {
-      this.localStorageCity = localStorage.city_name;
-      this.isLocalStorage = true;
+      this.setLocalStorage(localStorage.city_name, localStorage.country)
       console.log(`this is ${this.localStorageCity}`)
       this.getLocationData(this.localStorageCity);
     } else {
@@ -168,15 +140,20 @@ export default defineComponent({
   },
 
   computed: {
+    ...mapState(['city_name',  "localStorageCountry", "localStorageCity", "country", "humidity", "pressure",
+      "visibility", "temp", "icon", "feels_like", "wind", "description", "api_key", "isLocalStorage"]),
+
     computedData() {
-      this.getLocationData(this.city_name);
-      this.isLocalStorage = true;
+      this.getLocationData(this.inputValue);
     }
   },
 
   watch: {
     city_name(newName) {
       localStorage.city_name = newName;
+    },
+    country(newCountry) {
+      localStorage.country = newCountry;
     }
   }
 

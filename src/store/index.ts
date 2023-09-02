@@ -17,7 +17,6 @@ export default createStore({
     pressure: 0,
     description: '',
     humidity: 0,
-    dew: 0,
     visibility: 0,
 
     // Show data
@@ -36,8 +35,22 @@ export default createStore({
       state.humidity = json.main.humidity;
       state.visibility = json.visibility;
       state.country = json.sys.country;
-      state.localStorageCountry = json.sys.country;
-      state.localStorageCity = json.name;
+    },
+    setLocalStorage(state, city?: string, country?: string) {
+      if (city && country) {
+        state.localStorageCountry = country;
+        state.localStorageCity = city;
+      }
+      state.isLocalStorage = true;
+    },
+    setCachedCities(state, city: string) {
+      if (state.citiesArr.length < 5) {
+        state.citiesArr.unshift(city)
+        } else {
+        state.citiesArr.pop()
+        state.citiesArr.unshift(city)
+        }
+      console.log(`cities arr is ${state.citiesArr}`)
     }
   },
   actions: {
