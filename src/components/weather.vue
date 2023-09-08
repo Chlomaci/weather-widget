@@ -1,43 +1,8 @@
-<script lang="ts" setup>
-import {useData} from "@/hooks/useData";
-import {useLocalStorage} from "@/hooks/useLocalStorage";
-import {useLocation} from "@/hooks/useLocation";
-import {useChangeSettings} from "@/hooks/useChangeSettings";
-import {onMounted} from "vue";
-
-import settings_svg from "@/assets/settings.svg";
-import wind_svg from "@/assets/wind.svg";
-import pressure_svg from "@/assets/pressure.svg";
-
-const {city_name, country, icon, temp, feels_like, description, wind, pressure, humidity, visibility} = useData();
-const {localStorageCity} = useLocalStorage();
-const {getActualLocationData, getLocationData} = useLocation();
-const {isSettingsShowed, changeSettings} = useChangeSettings();
-
-const checkLocalStorage = () => {
-  if (localStorage.city_name !== undefined) {
-    // setLocalStorage(localStorage.city_name, localStorage.country)
-    console.log(`this is ${localStorageCity}`)
-    getLocationData(localStorageCity.value);
-  } else {
-    console.log('cache is clear')
-    navigator.geolocation.getCurrentPosition(position => {
-      getActualLocationData(position.coords.latitude, position.coords.longitude);
-      console.log(position.coords.latitude, position.coords.longitude, city_name.value)
-    });
-  }
-}
-
-onMounted(checkLocalStorage);
-
-</script>
-
 <template>
   <transition name="fade" mode="out-in" >
     <div class="widget__weather" v-show="!isSettingsShowed">
       <div class="header__weather">
         <h3>{{ city_name ? city_name : 'Moscow' }}, {{ country }}</h3>
-        <img :src="settings_svg" alt="settings" class="settings_img" @click="changeSettings" />
       </div>
       <div class="widget__temp">
         <img :src="icon" alt="temp" class="weather_img" />
@@ -62,21 +27,61 @@ onMounted(checkLocalStorage);
   </transition>
 </template>
 
+<script lang="ts" setup>
+import {useLocation} from "@/hooks/useLocation";
+import {useChangeSettings} from "@/hooks/useChangeSettings";
+import {onMounted} from "vue";
+import wind_svg from "@/assets/wind.svg";
+import pressure_svg from "@/assets/pressure.svg";
+import {useStore} from "vuex";
+
+const store = useStore()
+const {city_name, country, icon, temp, feels_like, description, wind, pressure, humidity, visibility} = store.state;
+
+// const {city_name, country, icon, temp, feels_like, description, wind, pressure, humidity, visibility, setData} = useData();
+const {getActualLocationData, getLocationData} = useLocation();
+const {isSettingsShowed} = useChangeSettings();
+
+
+// const checkLocalStorage = async () => {
+//   if (localStorage.city_name !== undefined) {
+//     // setLocalStorage(localStorage.city_name, localStorage.country)
+//     console.log(`this is ${localStorage.city_name}`)
+//     await getLocationData(localStorage.city_name);
+//   } else if (props.data) {
+//     setData(props.data);
+//     console.log(`props data: ${props.data}`)
+//   } else {
+//     console.log('cache is clear')
+//     navigator.geolocation.getCurrentPosition(async position => {
+//       const data = await getActualLocationData(position.coords.latitude, position.coords.longitude);
+//       setData(data);
+//       console.log(position.coords.latitude, position.coords.longitude, city_name.value)
+//     });
+//   }
+// }
+
+const checkLocalStorage = async () => {
+  if (localStorage.city_name !== undefined) {
+    // setLocalStorage(localStorage.city_name, localStorage.country)
+    console.log(`this is ${localStorage.city_name}`)
+    const data = await getLocationData(localStorage.city_name);
+    // store.commit('setData', data);
+  } else {
+    console.log('cache is clear')
+    navigator.geolocation.getCurrentPosition(async position => {
+      const data = await getActualLocationData(position.coords.latitude, position.coords.longitude);
+      store.commit('setData', data)
+      console.log(position.coords.latitude, position.coords.longitude, city_name)
+    });
+  }
+}
+
+onMounted(checkLocalStorage);
+
+</script>
+
 <style scoped lang="scss">
-h3 {
-  margin: 0px;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
 .widget {
   &__weather {
   display: flex;

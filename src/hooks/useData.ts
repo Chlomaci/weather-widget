@@ -2,6 +2,7 @@ import {ref} from "vue";
 import IData from "@/types/types";
 
 export function useData() {
+
     const city_name = ref('')
     // const citiesArr = ref([''])
     const country = ref('')
@@ -26,6 +27,7 @@ export function useData() {
         visibility.value = json.visibility;
         country.value= json.sys.country;
     }
+
     return {
         city_name, country, wind, temp, icon, feels_like, pressure, description, humidity, visibility, setData
     }
