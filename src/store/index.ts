@@ -1,10 +1,11 @@
 import { createStore } from "vuex";
-import IData from "@/types/types";
+import {IData} from "@/types/types";
+import {IStoreData} from "@/types/types";
 
-export default createStore({
+export default createStore<IStoreData>({
   state: {
     // API data
-    city_name: "",
+    city_name: '',
     country: '',
     icon: '',
     temp: 0,
@@ -14,6 +15,13 @@ export default createStore({
     description: '',
     humidity: 0,
     visibility: 0,
+
+    // booleans
+    isSettingsShowed: false,
+    isLocalStorage: false,
+
+    //cache
+    citiesArr: [],
   },
   getters: {},
   mutations: {
@@ -28,19 +36,31 @@ export default createStore({
       state.humidity = data.main.humidity;
       state.visibility = data.visibility;
       state.country = data.sys.country;
-
-      console.log(`setData city: ${state.city_name}`)
     },
-
-    // setCachedCities(state, city: string) {
-    //   if (state.citiesArr.length < 5) {
-    //     state.citiesArr.unshift(city)
-    //     } else {
-    //     state.citiesArr.pop()
-    //     state.citiesArr.unshift(city)
-    //     }
-    //   console.log(`cities arr is ${state.citiesArr}`)
-    // }
+    changeSettings(state) {
+      state.isSettingsShowed = !state.isSettingsShowed;
+    },
+    setCachedCities(state) {
+      if (state.citiesArr.length < 5) {
+        state.citiesArr.unshift({city_name: state.city_name, country: state.country,});
+      } else {
+        state.citiesArr.pop();
+        state.citiesArr.unshift({city_name: state.city_name, country: state.country,});
+      }
+      console.log(state.citiesArr)
+    },
+    setLocalStorage(state) {
+      state.isLocalStorage = true;
+    },
+    setLocalStorageCities(state, localStorageArr) {
+      state.citiesArr = localStorageArr;
+      state.isLocalStorage = true;
+    },
+    deleteCachedCity(state, element) {
+      const index = state.citiesArr.indexOf(element);
+      state.citiesArr.splice(index, 1);
+      localStorage.setItem('citiesArrStore', JSON.stringify(state.citiesArr));
+    }
   },
   actions: {
   },

@@ -1,32 +1,17 @@
 <template>
   <h1>Weather widget</h1>
   <div class="widget">
-    <img :src="settings_svg" v-show="!isSettingsShowed" alt="settings" class="settings_img" @click="changeSettings" />
-    <img :src="close_svg" v-show="isSettingsShowed" alt="close" class="settings_img" @click="changeSettings" />
-    <Weather :data="data" v-show="!isSettingsShowed"/>
-    <Settings v-show="isSettingsShowed" @formSubmit="onSubmit"/>
+    <Weather v-show="!store.state.isSettingsShowed"/>
+    <Settings v-show="store.state.isSettingsShowed"/>
   </div>
 </template>
 
 <script lang="ts" setup>
 import Weather from "@/components/weather.vue";
 import Settings from "@/components/settings.vue";
-import settings_svg from "@/assets/settings.svg";
-import close_svg from "@/assets/close.svg";
-import {useData} from "@/hooks/useData";
-import {useLocation} from "@/hooks/useLocation";
-import {useChangeSettings} from "@/hooks/useChangeSettings";
 
-const {isSettingsShowed, changeSettings} = useChangeSettings()
-const {setData} = useData();
-const {getLocationData} = useLocation();
-
-
-const onSubmit = async (inputValue: string) => {
-  const data = await getLocationData(inputValue);
-  setData(data);
-  changeSettings();
-}
+import {useStore} from "vuex";
+const store = useStore()
 
 </script>
 
@@ -57,7 +42,6 @@ h3 {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  height: 300px;
   width: 200px;
   font-size: 18px;
 
@@ -76,10 +60,6 @@ h3 {
   width: 30px;
   height: 30px;
 }
-  .settings_img {
-    position: absolute;
-    right: 10px;
-  }
 
 .wind,
 .pressure {

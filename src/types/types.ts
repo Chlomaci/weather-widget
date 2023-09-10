@@ -1,4 +1,4 @@
-export default interface IData {
+export interface IData {
     "coord": {
         "lon": number,
         "lat": number
@@ -43,4 +43,26 @@ export default interface IData {
     "id": number,
     "name": string,
     "cod": number
+}
+
+export interface IStoreData{
+    city_name: string,
+    country: string,
+    icon: string,
+    temp: number,
+    feels_like: number,
+    wind: number,
+    pressure: number,
+    description: string,
+    humidity: number,
+    visibility: number,
+
+    // isLocalStorage: boolean,
+    isSettingsShowed: boolean,
+    isLocalStorage: boolean,
+
+    citiesArr: [{
+        city_name: string,
+        country: string,
+    }?],
 }
