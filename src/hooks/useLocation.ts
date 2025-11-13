@@ -34,7 +34,7 @@ export  function useLocation() {
                 store.commit('setData', data);
                 localStorage.city_name = store.state.city_name;
                 localStorage.country = store.state.country;
-                if (checkTheSameCity(store.state.citiesArr, data.name)) {
+                if (!checkTheSameCity(store.state.citiesArr, data.name)) {
                     return
                 } else {
                     store.commit('setCachedCities');
